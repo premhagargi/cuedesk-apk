@@ -12,6 +12,7 @@ build/
 *.tsbuildinfo
 
 # Android build artifacts
+*.apk
 android/app/build/
 android/.gradle/
 android/build/
