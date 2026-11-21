@@ -52,12 +52,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   }
 
   return (
-    <div
-      className="fixed bottom-0 left-0 right-0 z-30 p-2 sm:p-3 bg-gradient-to-t from-slate-50 via-slate-50/95 to-transparent backdrop-blur-md"
-      style={{
-        paddingBottom: 'max(8px, var(--sab, 0px))'
-      }}
-    >
+    <div className="fixed bottom-0 left-0 right-0 z-30 px-3 pt-2 pb-5 sm:pb-3 bg-gradient-to-t from-slate-50 via-slate-50/95 to-transparent backdrop-blur-md">
       {/* 1. Centered Pill-Shaped Answer Button above the input box (No brain icon) */}
       <div className="max-w-3xl mx-auto flex items-center justify-between mb-2 px-1 relative">
         {/* Left balance spacer */}

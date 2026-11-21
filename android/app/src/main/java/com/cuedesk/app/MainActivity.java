@@ -13,8 +13,6 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import com.getcapacitor.BridgeActivity;
 
 public class MainActivity extends BridgeActivity {
@@ -46,13 +44,6 @@ public class MainActivity extends BridgeActivity {
                 View decorView = window.getDecorView();
                 decorView.setSystemUiVisibility(decorView.getSystemUiVisibility() | View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
             }
-
-            // Ensure root layout respects system window insets so WebView never overlaps the status bar
-            ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (view, insets) -> {
-                androidx.core.graphics.Insets statusBarInsets = insets.getInsets(WindowInsetsCompat.Type.statusBars());
-                view.setPadding(0, statusBarInsets.top, 0, 0);
-                return insets;
-            });
         } catch (Exception e) {
             e.printStackTrace();
         }
