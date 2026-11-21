@@ -63,11 +63,13 @@ export const App: React.FC = () => {
   const activeAbortRef = useRef<AbortController | null>(null)
   const triggerAnswerRef = useRef<(questionText?: string, targetMessageId?: string) => Promise<void>>((() => {}) as any)
 
-  // Track scroll position to prevent auto-scroll from hijacking manual inspection
+  // Track scroll position across mobile browsers & WebViews reliably
   const checkIfNearBottom = () => {
-    const { scrollTop, scrollHeight, clientHeight } = document.documentElement
+    const scrollTop = window.scrollY || document.documentElement.scrollTop || document.body.scrollTop || 0
+    const scrollHeight = document.documentElement.scrollHeight || document.body.scrollHeight || 0
+    const clientHeight = window.innerHeight || document.documentElement.clientHeight || 0
     const distanceToBottom = scrollHeight - (scrollTop + clientHeight)
-    const near = distanceToBottom < 180
+    const near = distanceToBottom < 220
     isNearBottomRef.current = near
     setShowScrollBottomBtn(!near && messages.length > 0)
   }
@@ -77,19 +79,17 @@ export const App: React.FC = () => {
     return () => window.removeEventListener('scroll', checkIfNearBottom)
   }, [messages.length])
 
-  // Scroll directly to the START of the target answer card so the user sees line 1 immediately
-  const scrollToCardTop = (cardId: string, smooth = true) => {
+  // Scroll directly to the START of the target answer card using browser-native scrollIntoView
+  // Retries via requestAnimationFrame to guarantee React DOM mount on all mobile devices
+  const scrollToCardTop = (cardId: string, smooth = true, attempts = 6) => {
     const el = document.getElementById(`msg-card-${cardId}`)
     if (el) {
-      // Fixed header offset: TopBar (48px) + AudioIndicator (32px) + breathing space (16px) = 96px
-      const headerOffset = 96
-      const elementPosition = el.getBoundingClientRect().top
-      const offsetPosition = elementPosition + (window.pageYOffset || document.documentElement.scrollTop) - headerOffset
-
-      window.scrollTo({
-        top: Math.max(0, offsetPosition),
-        behavior: smooth ? 'smooth' : 'auto'
+      el.scrollIntoView({
+        behavior: smooth ? 'smooth' : 'auto',
+        block: 'start'
       })
+    } else if (attempts > 0) {
+      requestAnimationFrame(() => scrollToCardTop(cardId, smooth, attempts - 1))
     }
   }
 
@@ -99,6 +99,13 @@ export const App: React.FC = () => {
       scrollToCardTop(latest.id, smooth)
     }
   }
+
+  // Auto-scroll to newly added message card as soon as it mounts in the DOM
+  const latestMessageId = messages[messages.length - 1]?.id
+  useEffect(() => {
+    if (!latestMessageId) return
+    scrollToCardTop(latestMessageId, true)
+  }, [latestMessageId])
 
   // Screen Wake Lock API: Keep phone display awake during active interview
   useEffect(() => {
@@ -298,7 +305,7 @@ export const App: React.FC = () => {
     updateGenerating(true)
     setPipelineStatus('thinking')
     // Align screen directly to the START of this new answer card (no scrolling past to bottom)
-    setTimeout(() => scrollToCardTop(newMessageId, true), 50)
+    scrollToCardTop(newMessageId, true)
 
     // Build history for context preservation from messagesRef.current (up to last 3 full turns = 6 messages)
     const historyTurns: HistoryTurn[] = []
@@ -489,7 +496,12 @@ export const App: React.FC = () => {
       />
 
       {/* 3. Main Scrollable Conversation Area (Chronological Order: Oldest Top, Newest at Bottom) */}
-      <main className="flex-1 pt-20 pb-36 px-1.5 sm:px-4 max-w-3xl w-full mx-auto">
+      <main
+        className="flex-1 pb-36 px-1.5 sm:px-4 max-w-3xl w-full mx-auto"
+        style={{
+          paddingTop: 'calc(88px + var(--sat, 0px))'
+        }}
+      >
         {messages.length === 0 ? (
           /* Empty / Idle State */
           <div className="h-[70vh] flex flex-col items-center justify-center text-center px-4 select-none">
@@ -521,7 +533,10 @@ export const App: React.FC = () => {
               <div
                 key={msg.id}
                 id={`msg-card-${msg.id}`}
-                className="transition-all scroll-mt-24"
+                className="transition-all"
+                style={{
+                  scrollMarginTop: 'calc(96px + var(--sat, 0px))'
+                }}
               >
                 <AnswerCard
                   message={msg}

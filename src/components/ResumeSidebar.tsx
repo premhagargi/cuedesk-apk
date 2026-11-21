@@ -73,7 +73,13 @@ export const ResumeSidebar: React.FC<ResumeSidebarProps> = ({
       {/* Slide-over Drawer */}
       <aside className="relative w-full max-w-md bg-white border-l border-slate-200 h-full flex flex-col shadow-2xl z-10 text-slate-900">
         {/* Header */}
-        <div className="h-14 px-4 border-b border-slate-200 flex items-center justify-between">
+        <div
+          className="px-4 border-b border-slate-200 flex items-center justify-between"
+          style={{
+            paddingTop: 'var(--sat, 0px)',
+            height: 'calc(56px + var(--sat, 0px))'
+          }}
+        >
           <div className="flex items-center gap-2">
             <User className="w-4 h-4 text-indigo-600" />
             <h2 className="font-semibold text-sm sm:text-base tracking-tight text-slate-900">

@@ -147,7 +147,10 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
   }
 
   return (
-    <article className="w-full bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 mb-4 shadow-sm hover:shadow-md relative transition-all">
+    <article
+      id={`msg-card-inner-${message.id}`}
+      className="w-full bg-white border border-slate-200 rounded-2xl p-4 sm:p-5 mb-4 shadow-sm hover:shadow-md relative transition-all"
+    >
       {/* 1. Question Header with Warm Amber Accent (Chiku AI style) */}
       <div className="mb-3.5 flex items-start justify-between gap-3">
         <div className="flex-1 flex items-start gap-2.5">
