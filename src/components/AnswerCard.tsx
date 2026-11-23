@@ -415,7 +415,7 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
                 Quick Actions & Follow-ups
               </span>
               <div className="flex flex-wrap gap-2">
-                {/* For theoretical questions WITHOUT code: Provide instant 'Show code implementation' pill */}
+                {/* For theoretical questions WITHOUT code: Provide instant 'Give Code </>' pill */}
                 {!code && (
                   <button
                     onClick={() =>
@@ -426,7 +426,7 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
                     title="Generate coding approach & complete code implementation"
                   >
                     <Code2 className="w-3.5 h-3.5 text-indigo-600" />
-                    <span>💻 Show code implementation</span>
+                    <span>Give Code {'</>'}</span>
                   </button>
                 )}
 
