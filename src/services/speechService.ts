@@ -33,6 +33,7 @@ export class SpeechService {
   private reconnectTimeout: any = null
   private reconnectAttempts = 0
   private incompleteRetryCount = 0
+  private isMuted = false
 
   constructor(callbacks: SpeechServiceCallbacks) {
     this.callbacks = callbacks
@@ -40,6 +41,26 @@ export class SpeechService {
 
   public setMode(mode: 'auto' | 'manual') {
     this.mode = mode
+  }
+
+  public setMuted(muted: boolean): void {
+    this.isMuted = muted
+    if (this.mediaStream) {
+      this.mediaStream.getAudioTracks().forEach((track) => {
+        track.enabled = !muted
+      })
+    }
+    if (muted) {
+      if (this.autoTriggerTimer) {
+        clearTimeout(this.autoTriggerTimer)
+        this.autoTriggerTimer = null
+      }
+      this.callbacks.onTranscriptUpdate('', this.getRollingTranscript())
+    }
+  }
+
+  public getIsMuted(): boolean {
+    return this.isMuted
   }
 
   public preloadToken(): void {
@@ -122,6 +143,7 @@ export class SpeechService {
           : new MediaRecorder(this.mediaStream!)
 
         this.mediaRecorder.ondataavailable = (event) => {
+          if (this.isMuted) return
           if (event.data.size > 0 && this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(event.data)
           }
@@ -131,6 +153,7 @@ export class SpeechService {
       }
 
       this.ws.onmessage = (event) => {
+        if (this.isMuted) return
         try {
           const data = JSON.parse(event.data)
 

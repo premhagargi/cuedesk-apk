@@ -1,9 +1,10 @@
 import React, { useRef, useLayoutEffect, useState } from 'react'
-import { Mic, X, Sparkles, Zap, AlertCircle } from 'lucide-react'
+import { Mic, MicOff, X, Sparkles, Zap, AlertCircle } from 'lucide-react'
 import { PipelineStatus } from '../types'
 
 interface AudioIndicatorProps {
   isActive: boolean
+  isMuted?: boolean
   pipelineStatus: PipelineStatus
   interimTranscript: string
   bufferedTranscript: string
@@ -12,6 +13,7 @@ interface AudioIndicatorProps {
 
 export const AudioIndicator: React.FC<AudioIndicatorProps> = ({
   isActive,
+  isMuted = false,
   pipelineStatus,
   interimTranscript,
   bufferedTranscript,
@@ -44,7 +46,9 @@ export const AudioIndicator: React.FC<AudioIndicatorProps> = ({
       <div className="flex items-center gap-2 overflow-hidden flex-1 mr-2">
         {/* Animated Status / Mic Wave */}
         <div className="flex items-center gap-1 shrink-0">
-          {pipelineStatus === 'thinking' ? (
+          {isMuted ? (
+            <MicOff className="w-3.5 h-3.5 text-rose-600" />
+          ) : pipelineStatus === 'thinking' ? (
             <Sparkles className="w-3.5 h-3.5 text-amber-600 animate-spin" />
           ) : pipelineStatus === 'answering' ? (
             <Zap className="w-3.5 h-3.5 text-indigo-600 animate-pulse" />
@@ -62,7 +66,7 @@ export const AudioIndicator: React.FC<AudioIndicatorProps> = ({
             />
           )}
 
-          {isActive && (currentText || pipelineStatus === 'transcribing') && pipelineStatus !== 'thinking' && pipelineStatus !== 'answering' && (
+          {!isMuted && isActive && (currentText || pipelineStatus === 'transcribing') && pipelineStatus !== 'thinking' && pipelineStatus !== 'answering' && (
             <span className="flex gap-0.5 items-end h-3">
               <span className="w-0.5 h-2 bg-emerald-600 animate-[bounce_0.6s_infinite]" />
               <span className="w-0.5 h-3 bg-emerald-600 animate-[bounce_0.8s_infinite]" />
@@ -85,7 +89,12 @@ export const AudioIndicator: React.FC<AudioIndicatorProps> = ({
           }}
           title={currentText || undefined}
         >
-          {pipelineStatus === 'thinking' ? (
+          {isMuted ? (
+            <span className="text-rose-700 font-semibold flex items-center gap-1.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+              <span>Mic muted — speak freely without cluttering questions</span>
+            </span>
+          ) : pipelineStatus === 'thinking' ? (
             <span className="text-amber-800 font-semibold animate-pulse">
               🧠 Analyzing question & formulating approach...
             </span>

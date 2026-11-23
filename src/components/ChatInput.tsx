@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react'
-import { Send, Sparkles } from 'lucide-react'
+import { Send, Sparkles, Mic, MicOff } from 'lucide-react'
 
 interface ChatInputProps {
   onSendMessage: (text: string) => void
@@ -8,6 +8,9 @@ interface ChatInputProps {
   hasMessages?: boolean
   isGenerating: boolean
   hasTranscript: boolean
+  isMuted?: boolean
+  isActive?: boolean
+  onToggleMic?: () => void
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -16,7 +19,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   onClearMessages,
   hasMessages = false,
   isGenerating,
-  hasTranscript
+  hasTranscript,
+  isMuted = false,
+  isActive = false,
+  onToggleMic
 }) => {
   const [text, setText] = useState('')
   const textareaRef = useRef<HTMLTextAreaElement>(null)
@@ -53,13 +59,42 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-30 px-3 pt-2 pb-5 sm:pb-3 bg-gradient-to-t from-slate-50 via-slate-50/95 to-transparent backdrop-blur-md">
-      {/* 1. Centered Pill-Shaped Answer Button above the input box (No brain icon) */}
+      {/* 1. Center Action Row: Circle Mic Button + Pill-Shaped Answer Button */}
       <div className="max-w-3xl mx-auto flex items-center justify-between mb-2 px-1 relative">
         {/* Left balance spacer */}
         <div className="w-16 shrink-0" />
 
-        {/* Center: Pill-shaped Answer Action Button */}
-        <div className="flex-1 flex justify-center">
+        {/* Center: Circle Mic Mute/Unmute Toggle + Pill-shaped Answer Action Button */}
+        <div className="flex-1 flex items-center justify-center gap-2 sm:gap-2.5">
+          {/* Circle Mic On/Off Toggle Button */}
+          {onToggleMic && (
+            <button
+              type="button"
+              onClick={onToggleMic}
+              className={`w-9 h-9 sm:w-10 sm:h-10 rounded-full flex items-center justify-center border transition-all active:scale-90 shadow-sm select-none shrink-0 ${
+                isMuted
+                  ? 'bg-rose-50 border-rose-300 text-rose-600 hover:bg-rose-100 shadow-rose-100/50'
+                  : isActive
+                  ? 'bg-emerald-50 border-emerald-300 text-emerald-600 hover:bg-emerald-100 shadow-emerald-100/50'
+                  : 'bg-white border-slate-300 text-slate-500 hover:bg-slate-50'
+              }`}
+              title={
+                isMuted
+                  ? 'Mic Muted — tap to unmute and hear interviewer'
+                  : isActive
+                  ? 'Mic Listening — tap to mute while you answer out loud'
+                  : 'Tap to start microphone'
+              }
+            >
+              {isMuted ? (
+                <MicOff className="w-4 h-4 text-rose-600" />
+              ) : (
+                <Mic className={`w-4 h-4 ${isActive ? 'text-emerald-600 animate-pulse' : 'text-slate-500'}`} />
+              )}
+            </button>
+          )}
+
+          {/* Pill-shaped Answer Action Button */}
           <button
             type="button"
             onClick={() => {
@@ -68,7 +103,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
               }
             }}
             disabled={isGenerating}
-            className={`px-7 py-2 rounded-full flex items-center gap-2 text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-md active:scale-95 select-none ${
+            className={`px-6 sm:px-7 py-2 rounded-full flex items-center gap-2 text-xs sm:text-sm font-semibold tracking-wide transition-all shadow-md active:scale-95 select-none ${
               isGenerating
                 ? 'bg-amber-100 text-amber-900 border border-amber-300 cursor-wait shadow-sm'
                 : hasTranscript

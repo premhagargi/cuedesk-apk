@@ -4,6 +4,7 @@ import { AppMode, PipelineStatus } from '../types'
 
 interface TopBarProps {
   isActive: boolean
+  isMuted?: boolean
   pipelineStatus?: PipelineStatus
   mode: AppMode
   onToggleMode: (newMode: AppMode) => void
@@ -14,6 +15,7 @@ interface TopBarProps {
 
 export const TopBar: React.FC<TopBarProps> = ({
   isActive,
+  isMuted = false,
   pipelineStatus = 'idle',
   mode,
   onToggleMode,
@@ -41,6 +43,11 @@ export const TopBar: React.FC<TopBarProps> = ({
           <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-indigo-50 border border-indigo-200 text-[10px] font-semibold text-indigo-700">
             <span className="w-1.5 h-1.5 rounded-full bg-indigo-600 animate-pulse" />
             ANSWERING
+          </span>
+        ) : isMuted ? (
+          <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-rose-50 border border-rose-300 text-[10px] font-semibold text-rose-800">
+            <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+            MUTED
           </span>
         ) : isActive ? (
           <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-300 text-[10px] font-semibold text-emerald-800">

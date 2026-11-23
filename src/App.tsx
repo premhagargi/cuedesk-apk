@@ -12,6 +12,7 @@ import { Sparkles, ArrowDown } from 'lucide-react'
 
 export const App: React.FC = () => {
   const [isActive, setIsActive] = useState(false)
+  const [isMuted, setIsMuted] = useState(false)
   const [pipelineStatus, setPipelineStatus] = useState<PipelineStatus>('idle')
   const [mode, setMode] = useState<AppMode>('auto')
   const [defaultLanguage] = useState<Language>('javascript')
@@ -186,6 +187,7 @@ export const App: React.FC = () => {
   // Handle Session Start & Auto-connect Mic
   const handleStartSession = async () => {
     setIsActive(true)
+    setIsMuted(false)
     setPipelineStatus('listening')
     const started = await speechServiceRef.current?.start()
     if (!started) {
@@ -197,6 +199,7 @@ export const App: React.FC = () => {
   // Handle Session End
   const handleEndSession = () => {
     setIsActive(false)
+    setIsMuted(false)
     setPipelineStatus('idle')
     speechServiceRef.current?.stop()
     speechServiceRef.current?.clearBuffer()
@@ -207,6 +210,23 @@ export const App: React.FC = () => {
       activeAbortRef.current = null
     }
     updateGenerating(false)
+  }
+
+  // Handle 1-Tap Circle Mic On/Off Mute Toggle
+  const handleToggleMic = async () => {
+    if (!isActive) {
+      // If session is idle, one tap activates the session and un-mutes
+      setIsMuted(false)
+      await handleStartSession()
+      return
+    }
+
+    const nextMuted = !isMuted
+    setIsMuted(nextMuted)
+    speechServiceRef.current?.setMuted(nextMuted)
+    if (nextMuted) {
+      setInterimTranscript('')
+    }
   }
 
   // Trigger Answer Generation (runs on every click / speech trigger)
@@ -474,6 +494,7 @@ export const App: React.FC = () => {
       {/* 1. Fixed Top Bar */}
       <TopBar
         isActive={isActive}
+        isMuted={isMuted}
         pipelineStatus={pipelineStatus}
         mode={mode}
         onToggleMode={(newMode) => setMode(newMode)}
@@ -485,6 +506,7 @@ export const App: React.FC = () => {
       {/* 2. Fixed Audio Indicator Pill */}
       <AudioIndicator
         isActive={isActive}
+        isMuted={isMuted}
         pipelineStatus={pipelineStatus}
         interimTranscript={interimTranscript}
         bufferedTranscript={bufferedTranscript}
@@ -564,6 +586,9 @@ export const App: React.FC = () => {
         hasMessages={messages.length > 0}
         isGenerating={isGenerating}
         hasTranscript={hasPendingTranscript}
+        isMuted={isMuted}
+        isActive={isActive}
+        onToggleMic={handleToggleMic}
       />
 
       {/* 5. Slide-Over Candidate Resume Grounding Sidebar */}
