@@ -6,7 +6,7 @@ import { ChatInput } from './components/ChatInput'
 import { ResumeSidebar } from './components/ResumeSidebar'
 import { SpeechService } from './services/speechService'
 import { streamChatAnswer, convertCode } from './services/apiService'
-import { parseAnswer } from './utils/answerParser'
+import { parseAnswer, extractFunctionOnly } from './utils/answerParser'
 import { AppMode, HistoryTurn, Language, Message, PipelineStatus } from './types'
 import { Sparkles, ArrowDown } from 'lucide-react'
 
@@ -467,6 +467,8 @@ export const App: React.FC = () => {
         question: targetMsg.question
       })
 
+      const convertedFunctionOnly = extractFunctionOnly(converted)
+
       setMessages((prev) =>
         prev.map((m) =>
           m.id === messageId
@@ -476,6 +478,7 @@ export const App: React.FC = () => {
                 parsed: {
                   ...m.parsed,
                   code: converted,
+                  codeFunctionOnly: convertedFunctionOnly,
                   language: targetLanguage
                 }
               }

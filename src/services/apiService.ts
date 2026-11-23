@@ -317,17 +317,85 @@ export async function convertCode({
   targetLanguage: Language
   question: string
 }): Promise<string> {
-  const response = await fetch('/api/convert-code', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ code, targetLanguage, question })
-  })
+  const langDisplay = targetLanguage.toLowerCase() === 'python' ? 'Python' : 'TypeScript'
+  const promptMessages = [
+    {
+      role: 'system',
+      content: `You are an expert polyglot software engineer. Convert the following code snippet to idiomatic, clean ${langDisplay}. Output ONLY the raw converted code inside a \`\`\`${targetLanguage.toLowerCase()} markdown code block. Do NOT include any conversation, greeting, explanation, or commentary.`
+    },
+    {
+      role: 'user',
+      content: `Problem context: "${question || 'Convert code'}"\n\nExisting Code:\n${code}\n\nConvert this to ${langDisplay}:`
+    }
+  ]
 
-  if (!response.ok) {
-    const err = await response.json().catch(() => ({}))
-    throw new Error(err.error || 'Failed to convert code')
+  // 1. Direct client-side Cerebras (ultra-fast ~250ms wafer-scale conversion)
+  try {
+    const res = await fetch('https://api.cerebras.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${HARDCODED_CEREBRAS_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'gpt-oss-120b',
+        messages: promptMessages,
+        temperature: 0.2,
+        max_tokens: 1000
+      })
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      const raw = data.choices?.[0]?.message?.content || ''
+      const match = raw.match(/```(?:\w+)?\n([\s\S]*?)```/)
+      const converted = match ? match[1].trim() : raw.trim()
+      if (converted) return converted
+    }
+  } catch (cerebrasErr) {
+    console.warn('[Cerebras code conversion fallback]:', cerebrasErr)
   }
 
-  const data = await response.json()
-  return data.convertedCode
+  // 2. Direct client-side Groq fallback
+  try {
+    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${HARDCODED_GROQ_KEY}`
+      },
+      body: JSON.stringify({
+        model: 'openai/gpt-oss-20b',
+        messages: promptMessages,
+        temperature: 0.2,
+        max_completion_tokens: 1000
+      })
+    })
+
+    if (res.ok) {
+      const data = await res.json()
+      const raw = data.choices?.[0]?.message?.content || ''
+      const match = raw.match(/```(?:\w+)?\n([\s\S]*?)```/)
+      const converted = match ? match[1].trim() : raw.trim()
+      if (converted) return converted
+    }
+  } catch (groqErr) {
+    console.warn('[Groq code conversion fallback]:', groqErr)
+  }
+
+  // 3. Fallback to local/backend proxy if available
+  try {
+    const response = await fetch('/api/convert-code', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ code, targetLanguage, question })
+    })
+
+    if (response.ok) {
+      const data = await response.json()
+      if (data.convertedCode) return data.convertedCode
+    }
+  } catch {}
+
+  throw new Error(`Failed to convert code to ${targetLanguage}`)
 }
