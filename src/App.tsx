@@ -518,7 +518,7 @@ export const App: React.FC = () => {
       />
 
       {/* 3. Main Scrollable Conversation Area (Chronological Order: Oldest Top, Newest at Bottom) */}
-      <main className="flex-1 pt-[88px] sm:pt-20 pb-36 px-1.5 sm:px-4 max-w-3xl w-full mx-auto">
+      <main className="flex-1 pt-20 pb-36 px-1.5 sm:px-4 max-w-3xl w-full mx-auto">
         {messages.length === 0 ? (
           /* Empty / Idle State */
           <div className="h-[70vh] flex flex-col items-center justify-center text-center px-4 select-none">
