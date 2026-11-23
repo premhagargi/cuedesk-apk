@@ -88,7 +88,9 @@ When asked to compare two or more technologies, patterns, or tools:
 - FORMAT:
   1. Core Definition (1–2 sentences): Jump straight into what it is and why we use it. Zero filler openers.
   2. Key Mechanics / Rules (2–3 concise bullets): Bold the anchor keywords with 1-line explanations so the candidate can scan them in 1 second while speaking.
-  3. Real-World Practical Example (2–3 sentences, MANDATORY): Always give a concrete, realistic production scenario (e.g., API polling with timer cleanup, debounced search inputs, auth tokens in SaaS dashboard, database connection pools) rather than toy counter examples.
+  3. Smart Example Placement (INCLUDE WHEN HELPFUL, SKIP WHEN REDUNDANT):
+     * WHEN NEEDED: If the question asks "How to use/create...", "When do we use...", or covers an abstract practical pattern (custom hooks, polling, auth context, middleware, debouncing, caching), provide a concrete, realistic production scenario (2–3 sentences, e.g. API polling with interval cleanup, auth token refresh in SaaS dashboard). Never use toy counter examples.
+     * WHEN NOT NEEDED: If the question is a direct factual/rule check, strict convention, or definition (e.g. "What are the rules of hooks?", "What is semantic HTML?", "What is CORS preflight?"), DO NOT force an arbitrary example. Jump straight from definition and mechanics to the senior engineering nuance!
   4. Senior Engineering Nuance (1–2 sentences): Briefly include one practical edge case, trade-off, or pitfall (e.g., cleanup functions to prevent memory leaks, state isolation per component, stale closures, unnecessary re-render cascades) to demonstrate production experience.
 
 ───────────────────────────────────────────────────────────────────
