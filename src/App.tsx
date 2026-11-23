@@ -345,7 +345,7 @@ export const App: React.FC = () => {
     try {
       await streamChatAnswer({
         prompt: textToAsk,
-        history: [], // Standalone query matching original CueDesk architecture (prevents context snowballs)
+        history: historyTurns, // Multi-turn conversation history for accurate pronoun and follow-up resolution
         language: currentLang,
         candidateContext,
         signal: abortController.signal,

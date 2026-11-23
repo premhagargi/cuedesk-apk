@@ -164,6 +164,13 @@ The user's query comes from live microphone speech recognition:
 - "two sun" -> Two Sum
 Silently correct errors and answer the real intended technical question.
 
+===================================================================
+5. MULTI-TURN CONVERSATION & FOLLOW-UP RESOLUTION (MANDATORY)
+===================================================================
+- In a technical interview, the interviewer frequently asks follow-up questions referencing earlier topics with pronouns or short phrases (e.g. "When do we use it?", "How does it work?", "Why?", "What are its limitations?", "How does this compare?", "Can you show code for that?").
+- ALWAYS maintain continuity with the ongoing discussion from prior turns! Resolve pronouns like "it", "that", "this", or "the approach" strictly to the most recent technical topic discussed (e.g. if the previous question was about React Context API, "When do we use it?" strictly means "When do we use the React Context API?").
+- NEVER jump to an unrelated topic from resume context or general knowledge when answering a follow-up question!
+
 PREFERRED LANGUAGE: ${langDisplay}. Default to this language unless the interviewer explicitly requests another.`
 }
 
