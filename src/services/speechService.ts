@@ -56,6 +56,15 @@ export class SpeechService {
         this.autoTriggerTimer = null
       }
       this.callbacks.onTranscriptUpdate('', this.getRollingTranscript())
+    } else {
+      // Instant Health Revival: when unmuting, guarantee WebSocket & MediaRecorder are active
+      this.reconnectAttempts = 0
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN || !this.mediaRecorder || this.mediaRecorder.state !== 'recording') {
+        console.log('[SpeechService] Unmuted but socket/recorder not running; immediately reviving audio stream...')
+        this.start()
+      } else {
+        this.callbacks.onStatusChange('listening')
+      }
     }
   }
 
@@ -103,6 +112,10 @@ export class SpeechService {
           }
         })
       }
+      // Guarantee track enabled state matches current isMuted state
+      this.mediaStream.getAudioTracks().forEach((track) => {
+        track.enabled = !this.isMuted
+      })
 
       // 3. Connect to Deepgram Live Streaming WebSocket (nova-3 flagship Transformer model)
       const params = new URLSearchParams({
@@ -143,7 +156,9 @@ export class SpeechService {
           : new MediaRecorder(this.mediaStream!)
 
         this.mediaRecorder.ondataavailable = (event) => {
-          if (this.isMuted) return
+          // Never drop audio packets! When muted, track.enabled=false already outputs pure digital silence.
+          // Sending continuous silent frames keeps Deepgram's WebM/Opus timeline synchronized, prevents socket idle timeouts,
+          // and ensures instant 0ms transcription the microsecond the user unmutes.
           if (event.data.size > 0 && this.ws && this.ws.readyState === WebSocket.OPEN) {
             this.ws.send(event.data)
           }
@@ -254,20 +269,18 @@ export class SpeechService {
         console.log(`[Deepgram] WebSocket closed (code: ${event?.code}, reason: "${event?.reason || 'none'}")`)
         this.cleanupSocket()
         if (this.isActive) {
-          if (this.reconnectAttempts < 5) {
-            this.reconnectAttempts++
-            const jitter = Math.floor(Math.random() * 300)
-            const backoff = Math.min(1200 + this.reconnectAttempts * 300 + jitter, 4000)
-            console.log(`[Deepgram] Reconnecting in ${backoff}ms (attempt ${this.reconnectAttempts}/5)...`)
-            this.reconnectTimeout = setTimeout(() => {
-              if (this.isActive) {
-                this.start()
-              }
-            }, backoff)
-          } else {
-            console.warn('[Deepgram] Max reconnection attempts reached')
-            this.callbacks.onStatusChange('error')
-          }
+          this.reconnectAttempts++
+          // Fast reconnect for the first 3 attempts (350ms - 1050ms) so connection recovers immediately
+          const delay = this.reconnectAttempts <= 3
+            ? 350 * this.reconnectAttempts
+            : Math.min(1000 + this.reconnectAttempts * 300, 3000)
+          console.log(`[Deepgram] Reconnecting in ${delay}ms (attempt ${this.reconnectAttempts})...`)
+          if (this.reconnectTimeout) clearTimeout(this.reconnectTimeout)
+          this.reconnectTimeout = setTimeout(() => {
+            if (this.isActive) {
+              this.start()
+            }
+          }, delay)
         } else {
           this.callbacks.onStatusChange('idle')
         }

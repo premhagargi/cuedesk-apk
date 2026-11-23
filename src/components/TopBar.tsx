@@ -24,7 +24,8 @@ export const TopBar: React.FC<TopBarProps> = ({
   onOpenResume
 }) => {
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 h-11 sm:h-12 bg-white/95 backdrop-blur-md border-b border-slate-200/90 px-3 sm:px-4 flex items-center justify-between select-none shadow-xs">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-200/90 px-3 sm:px-4 select-none shadow-xs pt-2 sm:pt-0">
+      <div className="h-11 sm:h-12 flex items-center justify-between">
       {/* Brand & Live status indicator */}
       <div className="flex items-center gap-2">
         <div className="flex items-center gap-1.5">
@@ -118,6 +119,7 @@ export const TopBar: React.FC<TopBarProps> = ({
             <span>End</span>
           </button>
         )}
+      </div>
       </div>
     </header>
   )
