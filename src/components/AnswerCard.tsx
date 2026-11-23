@@ -408,13 +408,28 @@ export const AnswerCard: React.FC<AnswerCardProps> = ({
             </div>
           )}
 
-          {/* 7. Quick Actions (Explain Code / Naive / Optimal) & Follow-ups */}
-          {((code || complexityTime) || (followups && followups.length > 0)) && (
+          {/* 7. Quick Actions (Explain Code / Naive / Optimal / Show Code) & Follow-ups */}
+          {(Boolean(code || complexityTime || (followups && followups.length > 0) || question)) && (
             <div className="mt-4 pt-3.5 border-t border-slate-200">
               <span className="text-[11.5px] text-slate-500 font-medium block mb-2 select-none">
-                {code ? 'Quick Actions & Follow-ups' : 'Did the interviewer ask something else?'}
+                Quick Actions & Follow-ups
               </span>
               <div className="flex flex-wrap gap-2">
+                {/* For theoretical questions WITHOUT code: Provide instant 'Show code implementation' pill */}
+                {!code && (
+                  <button
+                    onClick={() =>
+                      onAskFollowup?.(`Can you write the code for: "${question}"`)
+                    }
+                    disabled={isStreaming}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-xs font-semibold text-indigo-700 transition-all active:scale-95 disabled:opacity-50 select-none shadow-xs"
+                    title="Generate coding approach & complete code implementation"
+                  >
+                    <Code2 className="w-3.5 h-3.5 text-indigo-600" />
+                    <span>💻 Show code implementation</span>
+                  </button>
+                )}
+
                 {/* For coding/algorithm questions: Provide Explain, Naive, and Optimal instant action pills */}
                 {code && (
                   <>
